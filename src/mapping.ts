@@ -1,4 +1,4 @@
-import { json, BigInt } from "@graphprotocol/graph-ts";
+import { json, BigInt, Bytes } from "@graphprotocol/graph-ts";
 import {
   Collection,
   Deposit,
@@ -80,7 +80,7 @@ export function handleWithdraw(event: WithdrawEvent): void {
 export function handleRewardAdded(event: RewardAddedEvent): void {
   let rewardAdded = new RewardAdded(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
   rewardAdded.collection = event.params.collection;
-  rewardAdded.tokenIds = event.params.tokenIds;
+  // rewardAdded.tokenIds = event.params.tokenIds;
   rewardAdded.amountMetis = event.params.amountMetis;
   rewardAdded.amountCerus = event.params.amountCerus;
   rewardAdded.timestamp = event.block.timestamp;
@@ -177,9 +177,9 @@ export function handleReward(event: RewardEvent): void {
   // last time cerus reward
   newUserCollection.lastCerusReward = event.params.amountCerus;
 
-  let collectionId = event.to.toHex();
+//   let collectionId = event.to.toHex();
 
-  user.collections.push(newUserCollection);
+//   user.collections.push(newUserCollection);
 }
 
 // Handlers for Claim event
