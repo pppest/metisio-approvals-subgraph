@@ -35,35 +35,6 @@ export function handleDeposit(event: DepositEvent): void {
 
   deposit.save();
 
-  // Update user's token balance
-  let userId = event.params.user.toHex();
-  let user = User.load(userId);
-  if (user == null) {
-    user = new User(userId);
-    user.address = event.params.user;
-    user.tokenBalance = BigInt.fromI32(0);
-    user.rewards = BigInt.fromI32(0);
-    user.allTimeMetisReward = BigInt.fromI32(0);
-    user.lastMetisReward = BigInt.fromI32(0);
-    user.allTimeCerusReward = BigInt.fromI32(0);
-    user.lastCerusReward = BigInt.fromI32(0);
-    user.userCollections = [];
-  }
-  user.tokenBalance = user.tokenBalance.plus(BigInt.fromI32(1));
-  user.save();
-
-  // add to collection, not posible to deposit if collection is not added so we don't ad if doesn't exist.
-  let collectionId = event.params.collection.toHex();
-  let collection = Collection.load(collectionId);
-  if (collection) {
-    collection.address = event.params.collection;
-    let tokenIds = collection.tokenIds;
-    tokenIds.push(event.params.tokenId);
-    collection.tokenIds = tokenIds; // Initialize tokenIds as an empty array
-
-    collection.save();
-  }
-
   // add to user collection
   let userCollectionId = event.params.user.toHex() + "-" + event.params.collection.toHex();
   let userCollection = UserCollection.load(userCollectionId);
@@ -85,6 +56,39 @@ export function handleDeposit(event: DepositEvent): void {
   userCollection.tokenIds = updatedTokenIds;
 
   userCollection.save();
+
+  // Update user's token balance
+  let userId = event.params.user.toHex();
+  let user = User.load(userId);
+  if (user == null) {
+    user = new User(userId);
+    user.address = event.params.user;
+    user.tokenBalance = BigInt.fromI32(0);
+    user.rewards = BigInt.fromI32(0);
+    user.allTimeMetisReward = BigInt.fromI32(0);
+    user.lastMetisReward = BigInt.fromI32(0);
+    user.allTimeCerusReward = BigInt.fromI32(0);
+    user.lastCerusReward = BigInt.fromI32(0);
+    user.userCollections = [];
+  }
+  user.tokenBalance = user.tokenBalance.plus(BigInt.fromI32(1));
+  let temp = user.userCollections;
+  temp.push(userCollection.id);
+  user.userCollections = temp;
+
+  user.save();
+
+  // add to collection, not posible to deposit if collection is not added so we don't ad if doesn't exist.
+  let collectionId = event.params.collection.toHex();
+  let collection = Collection.load(collectionId);
+  if (collection) {
+    collection.address = event.params.collection;
+    let tokenIds = collection.tokenIds;
+    tokenIds.push(event.params.tokenId);
+    collection.tokenIds = tokenIds; // Initialize tokenIds as an empty array
+
+    collection.save();
+  }
 }
 
 export function handleWithdraw(event: WithdrawEvent): void {
@@ -99,6 +103,22 @@ export function handleWithdraw(event: WithdrawEvent): void {
   withdraw.transactionHash = event.transaction.hash;
 
   withdraw.save();
+
+  // remove from collection
+  let collectionId = event.params.collection.toHex();
+  let collection = Collection.load(collectionId);
+  if (collection) {
+    collection.address = event.params.collection;
+    let tokenIds = collection.tokenIds;
+    let index = tokenIds.indexOf(event.params.tokenId);
+    if (index > -1) {
+      tokenIds.splice(index, 1);
+    }
+
+    collection.tokenIds = tokenIds; // Initialize tokenIds as an empty array
+
+    collection.save();
+  }
 
   // Update user's token balance
   let userId = event.params.user.toHex();
