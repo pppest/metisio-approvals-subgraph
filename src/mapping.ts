@@ -3,8 +3,8 @@ import {
   Collection,
   Deposit,
   Withdraw,
-  RewardAdded,
   Reward,
+  UserReward,
   Claim,
   RetrieveToken,
   User,
@@ -38,7 +38,7 @@ export function handleDeposit(event: DepositEvent): void {
   // Update user's token balance
   let userId = event.params.user.toHex();
   let user = User.load(userId);
-  if (user == null) {
+  if (!user) {
     user = new User(userId);
     user.address = event.params.user;
     user.tokenBalance = BigInt.fromI32(0);
@@ -59,32 +59,32 @@ export function handleDeposit(event: DepositEvent): void {
     collection.address = event.params.collection;
     let tokenIds = collection.tokenIds;
     tokenIds.push(event.params.tokenId);
-    collection.tokenIds = tokenIds; // Initialize tokenIds as an empty array
+    collection.tokenIds = tokenIds;
 
     collection.save();
   }
 
   // add to user collection
-  let userCollectionId = event.params.user.toHex() + "-" + event.params.collection.toHex();
-  let userCollection = UserCollection.load(userCollectionId);
+  // let userCollectionId = event.params.user.toHex() + "-" + event.params.collection.toHex();
+  // let userCollection = UserCollection.load(userCollectionId);
 
-  if (!userCollection) {
-    userCollection = new UserCollection(userCollectionId);
-    userCollection.address = event.params.collection;
-    userCollection.userAddress = event.params.user;
-    userCollection.allTimeMetisReward = BigInt.fromI32(0);
-    userCollection.lastMetisReward = BigInt.fromI32(0);
-    userCollection.allTimeCerusReward = BigInt.fromI32(0);
-    userCollection.lastCerusReward = BigInt.fromI32(0);
-    userCollection.tokenIds = []; // Initialize tokenIds as an empty array
-  }
+  // if (!userCollection) {
+  //   userCollection = new UserCollection(userCollectionId);
+  //   userCollection.address = event.params.collection;
+  //   userCollection.userAddress = event.params.user;
+  //   userCollection.allTimeMetisReward = BigInt.fromI32(0);
+  //   userCollection.lastMetisReward = BigInt.fromI32(0);
+  //   userCollection.allTimeCerusReward = BigInt.fromI32(0);
+  //   userCollection.lastCerusReward = BigInt.fromI32(0);
+  //   userCollection.tokenIds = []; // Initialize tokenIds as an empty array
+  // }
 
-  // Update tokenIds in UserCollection
-  let updatedTokenIds = userCollection.tokenIds;
-  updatedTokenIds.push(event.params.tokenId);
-  userCollection.tokenIds = updatedTokenIds;
+  // // Update tokenIds in UserCollection
+  // let updatedTokenIds = userCollection.tokenIds;
+  // updatedTokenIds.push(event.params.tokenId);
+  // userCollection.tokenIds = updatedTokenIds;
 
-  userCollection.save();
+  // userCollection.save();
 }
 
 export function handleWithdraw(event: WithdrawEvent): void {
@@ -103,21 +103,23 @@ export function handleWithdraw(event: WithdrawEvent): void {
   // Update user's token balance
   let userId = event.params.user.toHex();
   let user = User.load(userId);
-  if (user != null) {
+  if (user) {
     user.tokenBalance = user.tokenBalance.minus(BigInt.fromI32(1));
     user.save();
   }
 
-  let userCollectionId = event.params.user.toHex() + "-" + event.params.collection.toHex();
-  let userCollection = UserCollection.load(userCollectionId);
-  if (userCollection) {
-    let tokenIds = userCollection.tokenIds;
+  // remove to collection, not possible to withdraw if collection is not added so we don't ad if doesn't exist.
+  let collectionId = event.params.collection.toHex();
+  let collection = Collection.load(collectionId);
+  if (collection) {
+    collection.address = event.params.collection;
+    let tokenIds = collection.tokenIds;
     let index = tokenIds.indexOf(event.params.tokenId);
     if (index > -1) {
       tokenIds.splice(index, 1);
     }
-    userCollection.tokenIds = tokenIds;
-    userCollection.save();
+    collection.tokenIds = tokenIds;
+    collection.save();
   }
 }
 
@@ -135,77 +137,50 @@ export function handleCollectionAdded(event: CollectionAddedEvent): void {
 // Handlers for RewardAdded event
 export function handleRewardAdded(event: RewardAddedEvent): void {
   let id = event.transaction.hash.toHex();
-  let rewardAdded = new RewardAdded(id);
+  let newReward = new Reward(id);
 
-  rewardAdded.collection = event.params.collection;
-  rewardAdded.amountMetis = event.params.amountMetis;
-  rewardAdded.amountCerus = event.params.amountCerus;
-  rewardAdded.timestamp = event.block.timestamp;
-  rewardAdded.blockNumber = event.block.number;
-  rewardAdded.transactionHash = event.transaction.hash;
+  newReward.collection = event.params.collection;
+  newReward.amountMetis = event.params.amountMetis;
+  newReward.amountCerus = event.params.amountCerus;
+  newReward.timestamp = event.block.timestamp;
+  newReward.blockNumber = event.block.number;
+  newReward.transactionHash = event.transaction.hash;
 
-  rewardAdded.save();
-}
-
-function handleAddCollectionToUser(userAddress: Address, collectionAddress: Address, tokenId: BigInt): void {
-  let userCollectionId = userAddress.toHex() + "-" + collectionAddress.toHex();
-  let userCollection = UserCollection.load(userCollectionId);
-
-  if (!userCollection) {
-    userCollection = new UserCollection(userCollectionId);
-    userCollection.address = collectionAddress;
-    userCollection.userAddress = userAddress;
-    userCollection.allTimeMetisReward = BigInt.fromI32(0);
-    userCollection.lastMetisReward = BigInt.fromI32(0);
-    userCollection.allTimeCerusReward = BigInt.fromI32(0);
-    userCollection.lastCerusReward = BigInt.fromI32(0);
-    userCollection.tokenIds = []; // Initialize tokenIds as an empty array
-  }
-
-  // Update tokenIds in UserCollection
-  let updatedTokenIds = userCollection.tokenIds;
-  updatedTokenIds.push(tokenId);
-  userCollection.tokenIds = updatedTokenIds;
-
-  userCollection.save();
+  newReward.save();
 }
 
 // Handlers for Reward event
 export function handleReward(event: RewardEvent): void {
-  let id = event.transaction.hash.toHex();
-  let reward = new Reward(id);
-
-  reward.user = event.params.user;
-  reward.collection = event.params.collection;
-  reward.tokenIds = event.params.tokenIds.map<BigInt>((id) => id as BigInt);
-  reward.amountMetis = event.params.amountMetis;
-  reward.amountCerus = event.params.amountCerus;
-  reward.timestamp = event.block.timestamp;
-  reward.blockNumber = event.block.number;
-  reward.transactionHash = event.transaction.hash;
-
-  reward.save();
-
-  let userId = event.params.user.toHex();
-  let user = User.load(userId);
-  if (user != null) {
-    user.allTimeMetisReward = user.allTimeMetisReward.plus(event.params.amountMetis);
-    user.lastMetisReward = event.params.amountMetis;
-    user.allTimeCerusReward = user.allTimeCerusReward.plus(event.params.amountCerus);
-    user.lastCerusReward = event.params.amountCerus;
-    user.save();
-  }
-
-  let collectionId = event.params.collection.toHex();
-  let userCollectionId = userId + "-" + collectionId;
-  let userCollection = UserCollection.load(userCollectionId);
-  if (userCollection != null) {
-    userCollection.allTimeMetisReward = userCollection.allTimeMetisReward.plus(event.params.amountMetis);
-    userCollection.lastMetisReward = event.params.amountMetis;
-    userCollection.allTimeCerusReward = userCollection.allTimeCerusReward.plus(event.params.amountCerus);
-    userCollection.lastCerusReward = event.params.amountCerus;
-    userCollection.save();
-  }
+  // let id = event.transaction.hash.toHex();
+  // let reward = new Reward(id);
+  // reward.user = event.params.user;
+  // reward.collection = event.params.collection;
+  // reward.tokenIds = event.params.tokenIds.map<BigInt>((id) => id as BigInt);
+  // reward.amountMetis = event.params.amountMetis;
+  // reward.amountCerus = event.params.amountCerus;
+  // reward.timestamp = event.block.timestamp;
+  // reward.blockNumber = event.block.number;
+  // reward.transactionHash = event.transaction.hash;
+  // reward.save();
+  // let userId = event.params.user.toHex();
+  // let user = User.load(userId);
+  // if (user != null) {
+  //   user.allTimeMetisReward = user.allTimeMetisReward.plus(event.params.amountMetis);
+  //   user.lastMetisReward = event.params.amountMetis;
+  //   user.allTimeCerusReward = user.allTimeCerusReward.plus(event.params.amountCerus);
+  //   user.lastCerusReward = event.params.amountCerus;
+  //   user.save();
+  // }
+  // let collectionId = event.params.collection.toHex();
+  // let userCollectionId = userId + "-" + collectionId;
+  // let userCollection = UserCollection.load(userCollectionId);
+  // if (userCollection != null) {
+  //   userCollection.allTimeMetisReward = userCollection.allTimeMetisReward.plus(event.params.amountMetis);
+  //   userCollection.lastMetisReward = event.params.amountMetis;
+  //   userCollection.allTimeCerusReward = userCollection.allTimeCerusReward.plus(event.params.amountCerus);
+  //   userCollection.lastCerusReward = event.params.amountCerus;
+  //   userCollection.save();
+  // }
 }
 
 // Handlers for Claim event

@@ -9,7 +9,7 @@
     "postinstall": "yarn build",
     "create-local": "graph create --node http://localhost:8020/ cerus/nftstaking",
     "remove-local": "graph remove --node http://localhost:8020/ cerus/nftstaking",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 cerus/nftstaking",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 cerus/nftstaking --version v0.0.1",
     "reset-local": "yarn codegen && yarn build && yarn remove-local && yarn create-local && yarn deploy-local"
   },
   "dependencies": {

@@ -48,10 +48,9 @@ type Withdraw @entity {
   transactionHash: Bytes!
 }
 
-type RewardAdded @entity {
+type Reward @entity {
   id: ID!
   collection: Bytes!
-  tokenIds: [BigInt!]!
   amountMetis: BigInt!
   amountCerus: BigInt!
   timestamp: BigInt!
@@ -59,7 +58,7 @@ type RewardAdded @entity {
   transactionHash: Bytes!
 }
 
-type Reward @entity {
+type UserReward @entity {
   id: ID!
   user: Bytes!
   collection: Bytes!
