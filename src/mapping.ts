@@ -18,7 +18,7 @@ import {
   Reward as RewardEvent,
   Claim as ClaimEvent,
   RetrieveToken as RetrieveTokenEvent,
-} from "./generated/CERUSNFTStakingPublic/CERUSNFTStakingPublic";
+} from "./generated/CERUSNFTRewardDistribution/CERUSNFTRewardDistribution";
 
 // This event is emitted whenever a new collection is added
 export function handleCollectionAdded(event: CollectionEvent): void {
