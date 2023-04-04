@@ -3,7 +3,7 @@ import {
   Collection,
   Deposit,
   Withdraw,
-  RewardInjected,
+  RewardAdded,
   Reward,
   Claim,
   RetrieveToken,
@@ -14,7 +14,7 @@ import {
   CollectionAdded as CollectionEvent,
   Deposit as DepositEvent,
   Withdraw as WithdrawEvent,
-  RewardInjected as RewardInjectedEvent,
+  RewardAdded as RewardAddedEvent,
   Reward as RewardEvent,
   Claim as ClaimEvent,
   RetrieveToken as RetrieveTokenEvent,
@@ -76,17 +76,17 @@ export function handleWithdraw(event: WithdrawEvent): void {
   user.save();
 }
 
-// Handlers for RewardInjected event
-export function handleRewardInjected(event: RewardInjectedEvent): void {
-  let rewardInjected = new RewardInjected(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
-  rewardInjected.collection = event.params.collection;
-  rewardInjected.tokenIds = event.params.tokenIds;
-  rewardInjected.amountMetis = event.params.amountMetis;
-  rewardInjected.amountCerus = event.params.amountCerus;
-  rewardInjected.timestamp = event.block.timestamp;
-  rewardInjected.blockNumber = event.block.number;
-  rewardInjected.transactionHash = event.transaction.hash;
-  rewardInjected.save();
+// Handlers for RewardAdded event
+export function handleRewardAdded(event: RewardAddedEvent): void {
+  let rewardAdded = new RewardAdded(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
+  rewardAdded.collection = event.params.collection;
+  rewardAdded.tokenIds = event.params.tokenIds;
+  rewardAdded.amountMetis = event.params.amountMetis;
+  rewardAdded.amountCerus = event.params.amountCerus;
+  rewardAdded.timestamp = event.block.timestamp;
+  rewardAdded.blockNumber = event.block.number;
+  rewardAdded.transactionHash = event.transaction.hash;
+  rewardAdded.save();
 }
 
 function handleAddCollectionToUser(userAddress: Bytes, collectionAddress: Bytes): void {

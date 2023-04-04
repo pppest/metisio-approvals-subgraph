@@ -45,7 +45,7 @@ type Withdraw @entity {
   transactionHash: Bytes!
 }
 
-type RewardInjected @entity {
+type RewardAdded @entity {
   id: ID!
   collection: Bytes!
   tokenIds: [BigInt!]!

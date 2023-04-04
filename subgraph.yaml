@@ -17,15 +17,15 @@ dataSources:
         - Collection
         - Deposit
         - Withdraw
-        - RewardInjected
+        - RewardAdded
         - Reward
         - Claim
         - RetrieveToken
         - Users
         - UserCollection
       abis:
-        - name: CERUSNFTStakingPublic
-          file: ./abis/CERUSNFTStakingPublic.json
+        - name: CERUSNFTRewardDistribution
+          file: ./abis/CERUSNFTStaking.json
       eventHandlers:
         - event: CollectionAdded(address)
           handler: handleCollectionAdded
@@ -37,8 +37,8 @@ dataSources:
           handler: handleRetrieveToken
         - event: Reward(indexed address,indexed address,uint256[],uint256,uint256)
           handler: handleReward
-        - event: RewardInjected(indexed address,uint256[],uint256,uint256)
-          handler: handleRewardInjected
+        - event: RewardAdded(indexed address,uint256[],uint256,uint256)
+          handler: handleRewardAdded
         - event: Withdraw(address,address,uint256)
           handler: handleWithdraw
       file: ./src/mapping.ts
