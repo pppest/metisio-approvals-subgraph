@@ -1,5 +1,8 @@
 # CERUS NFT Reward Distribution Contract Subgraph
 
+__NOTICE__
+this is for  metis goerli atm
+
 ## Start graph-node
 
 ```

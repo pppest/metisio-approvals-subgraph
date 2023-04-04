@@ -6,7 +6,7 @@ dataSources:
     name: CERUSNFTRewardDistribution
     network: andromeda
     source:
-      address: "0x654bF4D632Ec9B41c289A5b27eDFd735ada3Ed58"
+      address: "0x13F55686093e33CCA482c2b34183E5E4E22fDA8F"
       abi: CERUSNFTRewardDistribution
       startBlock: 738674
     mapping:
