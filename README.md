@@ -1,5 +1,4 @@
-ERC20/ERC721 Token Approvals
-
+# CERUS NFT Reward Distribution Contract Subgraph
 
 ## Start graph-node
 
@@ -30,14 +29,16 @@ yarn deploy-local
 
 ## Subgraph graphql playground
 
-http://localhost:8000/subgraphs/name/metisio/approvals/graphql
+http://localhost:8000/subgraphs/name/cerus/nftstaking
 
 ```graphql
-query {
-  tokens(subgraphError: deny, first: 100) {
-    id
-    symbol
-    type
+{
+  rewards(first: 5) {
+    collection
+    amountMetis
+    amountCerus
+    timestamp
+    tokenIds
   }
 }
 ```
@@ -45,31 +46,20 @@ query {
 ```json
 {
   "data": {
-    "tokens": [
+    "rewards": [
       {
-        "id": "0x034d0732c70c1b5e8dd8e2b8b9221a1744681280",
-        "symbol": "GLP:WMETIS-GIVE",
-        "type": "ERC20"
+        "amountCerus": "0",
+        "amountMetis": "100000000000000000",
+        "collection": "0xb1491f3bcad9d81983ea8ce57508c6e6cb6066d3",
+        "timestamp": "1679705526",
+        "tokenIds": ["3", "5"]
       },
       {
-        "id": "0x75cb093e4d61d2a2e65d8e0bbb01de8d89b53481",
-        "symbol": "WMETIS",
-        "type": "ERC20"
-      },
-      {
-        "id": "0x8667566d080abce4934d9c6c5c1fd720aceb3f60",
-        "symbol": "MetaCraftItem",
-        "type": "ERC721"
-      },
-      {
-        "id": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead0000",
-        "symbol": "Metis",
-        "type": "ERC20"
-      },
-      {
-        "id": "0xfe3f3a1f5b91eeb9c85255a71f3d1a99f01ec3ec",
-        "symbol": "GIVE",
-        "type": "ERC20"
+        "amountCerus": "0",
+        "amountMetis": "99999999999999999",
+        "collection": "0xb1491f3bcad9d81983ea8ce57508c6e6cb6066d3",
+        "timestamp": "1679705526",
+        "tokenIds": ["3", "5", "6"]
       }
     ]
   }

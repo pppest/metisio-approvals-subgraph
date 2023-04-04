@@ -1,22 +1,88 @@
-enum TokenType {
-  ERC20
-  ERC721
-  ERC1155
+type User @entity {
+  id: ID!
+  address: Bytes!
+  tokenBalance: BigInt!
+  rewards: BigInt!
+  allTimeMetisReward: BigInt!
+  lastMetisReward: BigInt!
+  allTimeCerusReward: BigInt!
+  lastCerusReward: BigInt!
+  userCollections: [UserCollection!]!
 }
 
-type Token @entity {
-  "token address"
+type UserCollection @entity {
   id: ID!
-  symbol: String!
-  type: TokenType!
+  address: Bytes!
+  userAddress: Bytes!
+  allTimeMetisReward: BigInt!
+  lastMetisReward: BigInt!
+  allTimeCerusReward: BigInt!
+  lastCerusReward: BigInt!
 }
 
-type Approved @entity {
+type Collection @entity {
   id: ID!
-  token: Token!
-  owner: Bytes!
-  spender: Bytes!
-  Amount: BigInt!
-  IsAll: Boolean!
-  UpdatedAt: BigInt!
+  collection: Bytes!
+}
+
+type Deposit @entity {
+  id: ID!
+  collection: Bytes!
+  tokenId: BigInt!
+  user: Bytes!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+}
+
+type Withdraw @entity {
+  id: ID!
+  user: Bytes!
+  collection: Bytes!
+  tokenId: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+}
+
+type RewardInjected @entity {
+  id: ID!
+  collection: Bytes!
+  tokenIds: [BigInt!]!
+  amountMetis: BigInt!
+  amountCerus: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+}
+
+type Reward @entity {
+  id: ID!
+  user: Bytes!
+  collection: Bytes!
+  tokenIds: [BigInt!]!
+  amountMetis: BigInt!
+  amountCerus: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+}
+
+type Claim @entity {
+  id: ID!
+  user: Bytes!
+  amountMetis: BigInt!
+  amountCerus: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
+}
+
+type RetrieveToken @entity {
+  id: ID!
+  token: Bytes!
+  amount: BigInt!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  transactionHash: Bytes!
 }
