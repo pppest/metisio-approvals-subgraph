@@ -18,11 +18,14 @@ type UserCollection @entity {
   lastMetisReward: BigInt!
   allTimeCerusReward: BigInt!
   lastCerusReward: BigInt!
+  tokenIds: [BigInt!]!
 }
+
 
 type Collection @entity {
   id: ID!
-  collection: Bytes!
+  address: Bytes!
+  tokenIds: [BigInt!]!
 }
 
 type Deposit @entity {
