@@ -4,7 +4,7 @@ import {
   Deposit,
   Withdraw,
   RewardAdded,
-  Reward,
+  UserReward,
   Claim,
   RetrieveToken,
   User,
@@ -71,7 +71,13 @@ export function handleDeposit(event: DepositEvent): void {
     user.lastCerusReward = BigInt.fromI32(0);
     user.userCollections = [];
   }
-  user.tokenBalance = user.tokenBalance.plus(BigInt.fromI32(1));
+
+  // update balance
+  let tempBalance = user.tokenBalance;
+  tempBalance.plus(BigInt.fromI32(1));
+  user.tokenBalance = tempBalance;
+  
+  // update user collection
   let temp = user.userCollections;
   temp.push(userCollection.id);
   user.userCollections = temp;
@@ -123,11 +129,15 @@ export function handleWithdraw(event: WithdrawEvent): void {
   // Update user's token balance
   let userId = event.params.user.toHex();
   let user = User.load(userId);
-  if (user != null) {
-    user.tokenBalance = user.tokenBalance.minus(BigInt.fromI32(1));
+  if (user) {
+    let tempBalance = user.tokenBalance;
+    tempBalance.minus(BigInt.fromI32(1));
+    user.tokenBalance = tempBalance;
+
     user.save();
   }
 
+  // update user collection
   let userCollectionId = event.params.user.toHex() + "-" + event.params.collection.toHex();
   let userCollection = UserCollection.load(userCollectionId);
   if (userCollection) {

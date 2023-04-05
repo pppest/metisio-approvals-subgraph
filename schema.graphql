@@ -59,7 +59,7 @@ type RewardAdded @entity {
   transactionHash: Bytes!
 }
 
-type Reward @entity {
+type UserReward @entity {
   id: ID!
   user: Bytes!
   collection: Bytes!
