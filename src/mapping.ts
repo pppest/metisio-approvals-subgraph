@@ -21,6 +21,9 @@ import {
   RetrieveToken as RetrieveTokenEvent,
 } from "./generated/CERUSNFTRewardDistribution/CERUSNFTRewardDistribution";
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// HANDLE DEPOSIT
 export function handleDeposit(event: DepositEvent): void {
   // add to deposits
   let id = event.transaction.hash.toHex();
@@ -99,6 +102,8 @@ export function handleDeposit(event: DepositEvent): void {
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 export function handleWithdraw(event: WithdrawEvent): void {
   // add withdraw
   let id = event.transaction.hash.toHex();
@@ -128,30 +133,41 @@ export function handleWithdraw(event: WithdrawEvent): void {
     collection.save();
   }
 
-  // Update user's token balance
+  // Update user's token balance and withdraws count
   let userId = event.params.user.toHex();
   let user: User | null = User.load(userId);
 
   if (user !== null) {
-    user.deposits = user.deposits.plus(BigInt.fromI32(1));
     user.tokenBalance = user.tokenBalance.minus(BigInt.fromI32(1));
-  }
 
-  // update user collection
-  let userCollectionId = event.params.user.toHex() + "-" + event.params.collection.toHex();
-  let userCollection = UserCollection.load(userCollectionId);
-  if (userCollection) {
-    let tokenIds = userCollection.tokenIds;
-    let index = tokenIds.indexOf(event.params.tokenId);
-    if (index > -1) {
-      tokenIds.splice(index, 1);
+    // Get the user collection for this withdrawal
+    let userCollectionId = event.params.user.toHex() + "-" + event.params.collection.toHex();
+    let userCollection = UserCollection.load(userCollectionId);
+
+    if (userCollection) {
+      // Update user collection tokenIds
+      let tokenIds = userCollection.tokenIds;
+      let index = tokenIds.indexOf(event.params.tokenId);
+      if (index > -1) {
+        tokenIds.splice(index, 1);
+      }
+      userCollection.tokenIds = tokenIds;
+
+      // Update the user's withdraws count for this collection
+      userCollection.withdraws = userCollection.withdraws.plus(BigInt.fromI32(1));
+
+      userCollection.save();
     }
-    userCollection.tokenIds = tokenIds;
 
-    userCollection.save();
+    // Update user's withdraws count
+    user.withdraws = user.withdraws.plus(BigInt.fromI32(1));
+
+    user.save();
   }
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This event is emitted whenever a new collection is added
 export function handleCollectionAdded(event: CollectionAddedEvent): void {
   let id = event.params.collection.toHex();
