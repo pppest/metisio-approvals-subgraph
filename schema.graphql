@@ -8,6 +8,8 @@ type User @entity {
   allTimeCerusReward: BigInt!
   lastCerusReward: BigInt!
   userCollections: [UserCollection!]!
+  deposits: BigInt!
+  withdraws: BigInt!
 }
 
 type UserCollection @entity {
@@ -19,8 +21,8 @@ type UserCollection @entity {
   allTimeCerusReward: BigInt!
   lastCerusReward: BigInt!
   tokenIds: [BigInt!]!
+  timesRewarded: BigInt!
 }
-
 
 type Collection @entity {
   id: ID!

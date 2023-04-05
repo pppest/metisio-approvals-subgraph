@@ -48,6 +48,7 @@ export function handleDeposit(event: DepositEvent): void {
     userCollection.allTimeCerusReward = BigInt.fromI32(0);
     userCollection.lastCerusReward = BigInt.fromI32(0);
     userCollection.tokenIds = []; // Initialize tokenIds as an empty array
+    userCollection.timesRewarded = BigInt.fromI32(0);
   }
 
   // Update tokenIds in UserCollection
@@ -70,12 +71,13 @@ export function handleDeposit(event: DepositEvent): void {
     user.allTimeCerusReward = BigInt.fromI32(0);
     user.lastCerusReward = BigInt.fromI32(0);
     user.userCollections = [];
+    user.deposits = BigInt.fromI32(0);
+    user.withdraws = BigInt.fromI32(0);
   }
 
-  // update balance
-  let tempBalance = user.tokenBalance;
-  tempBalance.plus(BigInt.fromI32(1));
-  user.tokenBalance = tempBalance;
+  // update user balance
+  user.deposits = user.deposits.plus(BigInt.fromI32(1));
+  user.tokenBalance = user.tokenBalance.plus(BigInt.fromI32(1));
 
   // update user collection
   let temp = user.userCollections;
@@ -98,6 +100,7 @@ export function handleDeposit(event: DepositEvent): void {
 }
 
 export function handleWithdraw(event: WithdrawEvent): void {
+  // add withdraw
   let id = event.transaction.hash.toHex();
   let withdraw = new Withdraw(id);
 
@@ -120,21 +123,18 @@ export function handleWithdraw(event: WithdrawEvent): void {
     if (index > -1) {
       tokenIds.splice(index, 1);
     }
-
-    collection.tokenIds = tokenIds; // Initialize tokenIds as an empty array
+    collection.tokenIds = tokenIds;
 
     collection.save();
   }
 
   // Update user's token balance
   let userId = event.params.user.toHex();
-  let user = User.load(userId);
-  if (user) {
-    let tempBalance = user.tokenBalance;
-    tempBalance.minus(BigInt.fromI32(1));
-    user.tokenBalance = tempBalance;
+  let user: User | null = User.load(userId);
 
-    user.save();
+  if (user !== null) {
+    user.deposits = user.deposits.plus(BigInt.fromI32(1));
+    user.tokenBalance = user.tokenBalance.minus(BigInt.fromI32(1));
   }
 
   // update user collection
@@ -147,6 +147,7 @@ export function handleWithdraw(event: WithdrawEvent): void {
       tokenIds.splice(index, 1);
     }
     userCollection.tokenIds = tokenIds;
+
     userCollection.save();
   }
 }
@@ -177,31 +178,9 @@ export function handleRewardAdded(event: RewardAddedEvent): void {
   rewardAdded.save();
 }
 
-function handleAddCollectionToUser(userAddress: Address, collectionAddress: Address, tokenId: BigInt): void {
-  let userCollectionId = userAddress.toHex() + "-" + collectionAddress.toHex();
-  let userCollection = UserCollection.load(userCollectionId);
-
-  if (!userCollection) {
-    userCollection = new UserCollection(userCollectionId);
-    userCollection.address = collectionAddress;
-    userCollection.userAddress = userAddress;
-    userCollection.allTimeMetisReward = BigInt.fromI32(0);
-    userCollection.lastMetisReward = BigInt.fromI32(0);
-    userCollection.allTimeCerusReward = BigInt.fromI32(0);
-    userCollection.lastCerusReward = BigInt.fromI32(0);
-    userCollection.tokenIds = []; // Initialize tokenIds as an empty array
-  }
-
-  // Update tokenIds in UserCollection
-  let updatedTokenIds = userCollection.tokenIds;
-  updatedTokenIds.push(tokenId);
-  userCollection.tokenIds = updatedTokenIds;
-
-  userCollection.save();
-}
-
-// Handlers for Reward event
+// Handlers for User Reward event
 export function handleReward(event: RewardEvent): void {
+  // add reward
   let id = event.transaction.hash.toHex();
   let reward = new UserReward(id);
 
@@ -216,6 +195,7 @@ export function handleReward(event: RewardEvent): void {
 
   reward.save();
 
+  // user
   let userId = event.params.user.toHex();
   let user = User.load(userId);
   if (user != null) {
@@ -231,11 +211,13 @@ export function handleReward(event: RewardEvent): void {
   let collectionId = event.params.collection.toHex();
   let userCollectionId = userId + "-" + collectionId;
   let userCollection = UserCollection.load(userCollectionId);
-  if (userCollection != null) {
+  if (userCollection) {
     userCollection.allTimeMetisReward = userCollection.allTimeMetisReward.plus(event.params.amountMetis);
     userCollection.lastMetisReward = event.params.amountMetis;
     userCollection.allTimeCerusReward = userCollection.allTimeCerusReward.plus(event.params.amountCerus);
     userCollection.lastCerusReward = event.params.amountCerus;
+    userCollection.timesRewarded = userCollection.timesRewarded.plus(BigInt.fromI32(1));
+
     userCollection.save();
   }
 }
