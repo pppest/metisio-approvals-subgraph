@@ -76,7 +76,7 @@ export function handleDeposit(event: DepositEvent): void {
   let tempBalance = user.tokenBalance;
   tempBalance.plus(BigInt.fromI32(1));
   user.tokenBalance = tempBalance;
-  
+
   // update user collection
   let temp = user.userCollections;
   temp.push(userCollection.id);
@@ -203,7 +203,7 @@ function handleAddCollectionToUser(userAddress: Address, collectionAddress: Addr
 // Handlers for Reward event
 export function handleReward(event: RewardEvent): void {
   let id = event.transaction.hash.toHex();
-  let reward = new Reward(id);
+  let reward = new UserReward(id);
 
   reward.user = event.params.user;
   reward.collection = event.params.collection;
@@ -223,6 +223,8 @@ export function handleReward(event: RewardEvent): void {
     user.lastMetisReward = event.params.amountMetis;
     user.allTimeCerusReward = user.allTimeCerusReward.plus(event.params.amountCerus);
     user.lastCerusReward = event.params.amountCerus;
+    user.rewards = user.rewards.plus(BigInt.fromI32(1));
+
     user.save();
   }
 
