@@ -9,6 +9,8 @@ import {
   RetrieveToken,
   User,
   UserCollection,
+  Token,
+  UserToken,
 } from "./generated/schema";
 
 import {
@@ -38,6 +40,38 @@ export function handleDeposit(event: DepositEvent): void {
 
   deposit.save();
 
+  // token
+  let tokenId = event.params.tokenId.toString();
+  let token = Token.load(tokenId);
+
+  if (!token) {
+    token = new Token(tokenId);
+    token.collection = event.params.collection.toHex();
+    token.timesRewarded = 0;
+    token.totalMetisReward = BigInt.fromI32(0);
+    token.totalCerusReward = BigInt.fromI32(0);
+    token.timesDeposited = 0;
+    token.timesWithdrawn = 0;
+  }
+  token.timesDeposited += 1;
+  token.save();
+
+  // user token
+  let userToken = UserToken.load(tokenId);
+  if (!userToken) {
+    userToken = new UserToken(tokenId);
+    userToken.user = event.params.user;
+    userToken.timesRewardedUser = 0;
+    userToken.timesDepositedUser = 0;
+    userToken.timesWithdrawnUser = 0;
+    userToken.totalMetisRewardUser = BigInt.fromI32(0);
+    userToken.totalCerusRewardUser = BigInt.fromI32(0);
+    userToken.lastMetisRewardUser = BigInt.fromI32(0);
+    userToken.lastCerusRewardUser = BigInt.fromI32(0);
+  }
+  userToken.timesDepositedUser += 1;
+  userToken.save();
+
   // add to user collection
   let userCollectionId = event.params.user.toHex() + "-" + event.params.collection.toHex();
   let userCollection = UserCollection.load(userCollectionId);
@@ -45,12 +79,13 @@ export function handleDeposit(event: DepositEvent): void {
   if (!userCollection) {
     userCollection = new UserCollection(userCollectionId);
     userCollection.address = event.params.collection;
-    userCollection.userAddress = event.params.user;
+    userCollection.user = event.params.user;
     userCollection.allTimeMetisReward = BigInt.fromI32(0);
     userCollection.lastMetisReward = BigInt.fromI32(0);
     userCollection.allTimeCerusReward = BigInt.fromI32(0);
     userCollection.lastCerusReward = BigInt.fromI32(0);
     userCollection.tokenIds = []; // Initialize tokenIds as an empty array
+    userCollection.tokens = [];
     userCollection.timesRewarded = BigInt.fromI32(0);
   }
 
@@ -58,6 +93,10 @@ export function handleDeposit(event: DepositEvent): void {
   let updatedTokenIds = userCollection.tokenIds;
   updatedTokenIds.push(event.params.tokenId);
   userCollection.tokenIds = updatedTokenIds;
+
+  let tempUserTokens = userCollection.tokens;
+  tempUserTokens.push(userToken.id);
+  userCollection.tokens = tempUserTokens;
 
   userCollection.save();
 
@@ -95,7 +134,7 @@ export function handleDeposit(event: DepositEvent): void {
   if (collection) {
     collection.address = event.params.collection;
     let tokenIds = collection.tokenIds;
-    tokenIds.push(event.params.tokenId);
+    tokenIds.push(token.id);
     collection.tokenIds = tokenIds; // Initialize tokenIds as an empty array
 
     collection.save();
@@ -124,13 +163,29 @@ export function handleWithdraw(event: WithdrawEvent): void {
   if (collection) {
     collection.address = event.params.collection;
     let tokenIds = collection.tokenIds;
-    let index = tokenIds.indexOf(event.params.tokenId);
+    let index = tokenIds.indexOf(event.params.tokenId.toString());
     if (index > -1) {
       tokenIds.splice(index, 1);
     }
     collection.tokenIds = tokenIds;
 
     collection.save();
+  }
+
+  // token
+  let tokenId = event.params.tokenId.toString();
+  let token = Token.load(tokenId);
+
+  if (token) {
+    token.timesWithdrawn += 1;
+    token.save();
+  }
+
+  // user token
+  let userToken = UserToken.load(tokenId);
+  if (userToken) {
+    userToken.timesWithdrawnUser += 1;
+    userToken.save();
   }
 
   // Update user's token balance and withdraws count
@@ -145,8 +200,25 @@ export function handleWithdraw(event: WithdrawEvent): void {
     let userCollection = UserCollection.load(userCollectionId);
 
     if (userCollection) {
+      // remove from user tokens
+      if (userToken) {
+        let updatedUserTokenIds = userCollection.tokenIds;
+        updatedUserTokenIds.push(event.params.tokenId);
+        userCollection.tokenIds = updatedUserTokenIds;
+
+        let tempUserTokens = userCollection.tokens;
+
+        let index = tempUserTokens.indexOf(tokenId);
+        if (index > -1) {
+          tempUserTokens.splice(index, 1);
+        }
+
+        userCollection.tokens = tempUserTokens;
+      }
+
       // Update user collection tokenIds
       let tokenIds = userCollection.tokenIds;
+
       let index = tokenIds.indexOf(event.params.tokenId);
       if (index > -1) {
         tokenIds.splice(index, 1);
@@ -165,7 +237,6 @@ export function handleWithdraw(event: WithdrawEvent): void {
     user.save();
   }
 }
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This event is emitted whenever a new collection is added
@@ -210,6 +281,35 @@ export function handleReward(event: RewardEvent): void {
   reward.transactionHash = event.transaction.hash;
 
   reward.save();
+
+  // update tokens
+  let tokenIds = event.params.tokenIds;
+  let amountMetisPerToken = reward.amountMetis.div(BigInt.fromI32(tokenIds.length));
+  let amountCerusPerToken = reward.amountCerus.div(BigInt.fromI32(tokenIds.length));
+
+  for (let i = 0; i < tokenIds.length; i++) {
+    // token
+    let token = Token.load(tokenIds[i].toString());
+    if (token) {
+      token.timesRewarded += 1;
+      token.totalMetisReward = token.totalMetisReward.plus(amountMetisPerToken);
+      token.totalCerusReward = token.totalCerusReward.plus(amountCerusPerToken);
+      token.lastMetisReward = amountMetisPerToken;
+      token.lastCerusReward = amountCerusPerToken;
+      token.save();
+    }
+
+    // user token
+    let userToken = UserToken.load(tokenIds[i].toString());
+    if (userToken) {
+      userToken.timesRewardedUser + 1;
+      userToken.totalMetisRewardUser = userToken.totalMetisRewardUser.plus(amountMetisPerToken);
+      userToken.totalCerusRewardUser = userToken.totalCerusRewardUser.plus(amountCerusPerToken);
+      userToken.lastMetisRewardUser = amountMetisPerToken;
+      userToken.lastCerusRewardUser = amountCerusPerToken;
+      userToken.save();
+    }
+  }
 
   // user
   let userId = event.params.user.toHex();

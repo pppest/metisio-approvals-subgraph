@@ -1,3 +1,21 @@
+type Collection @entity {
+  id: ID!
+  address: Bytes!
+  tokenIds: [Token!]!
+}
+
+type Token @entity {
+  id: ID!
+  collection: Collection!
+  timesRewarded: Int!
+  totalMetisReward: BigInt!
+  totalCerusReward: BigInt!
+  lastMetisReward: BigInt!
+  lastCerusReward: BigInt!
+  timesDeposited: Int!
+  timesWithdrawn: Int!
+}
+
 type User @entity {
   id: ID!
   address: Bytes!
@@ -10,25 +28,36 @@ type User @entity {
   userCollections: [UserCollection!]!
   deposits: BigInt!
   withdraws: BigInt!
+  userTokens: [UserToken!]!
 }
 
 type UserCollection @entity {
   id: ID!
   address: Bytes!
-  userAddress: Bytes!
+  user: Bytes!
   allTimeMetisReward: BigInt!
   lastMetisReward: BigInt!
   allTimeCerusReward: BigInt!
   lastCerusReward: BigInt!
   tokenIds: [BigInt!]!
+  tokens: [Token!]!
   timesRewarded: BigInt!
   withdraws: BigInt!
+  deposits: BigInt!
 }
 
-type Collection @entity {
+type UserToken @entity {
   id: ID!
-  address: Bytes!
-  tokenIds: [BigInt!]!
+  user: Bytes!
+  userCollection: UserCollection!
+  token: Token!
+  timesDepositedUser: Int!
+  timesRewardedUser: Int!
+  timesWithdrawnUser: Int!
+  totalMetisRewardUser: BigInt!
+  totalCerusRewardUser: BigInt!
+  lastMetisRewardUser: BigInt!
+  lastCerusRewardUser: BigInt!
 }
 
 type Deposit @entity {
