@@ -78,9 +78,9 @@ export function handleDeposit(event: DepositEvent): void {
     userCollection = new UserCollection(userCollectionId);
     userCollection.address = event.params.collection;
     userCollection.user = event.params.user;
-    userCollection.allTimeMetisReward = BigInt.fromI32(0);
+    userCollection.totalMetisReward = BigInt.fromI32(0);
     userCollection.lastMetisReward = BigInt.fromI32(0);
-    userCollection.allTimeCerusReward = BigInt.fromI32(0);
+    userCollection.totalCerusReward = BigInt.fromI32(0);
     userCollection.lastCerusReward = BigInt.fromI32(0);
     userCollection.tokenIds = []; // Initialize tokenIds as an empty array
     userCollection.tokens = [];
@@ -106,9 +106,9 @@ export function handleDeposit(event: DepositEvent): void {
     user.address = event.params.user;
     user.tokenBalance = BigInt.fromI32(0);
     user.rewards = BigInt.fromI32(0);
-    user.allTimeMetisReward = BigInt.fromI32(0);
+    user.totalMetisReward = BigInt.fromI32(0);
     user.lastMetisReward = BigInt.fromI32(0);
-    user.allTimeCerusReward = BigInt.fromI32(0);
+    user.totalCerusReward = BigInt.fromI32(0);
     user.lastCerusReward = BigInt.fromI32(0);
     user.userCollections = [];
     user.deposits = BigInt.fromI32(0);

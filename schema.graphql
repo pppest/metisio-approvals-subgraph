@@ -21,9 +21,9 @@ type User @entity {
   address: Bytes!
   tokenBalance: BigInt!
   rewards: BigInt!
-  allTimeMetisReward: BigInt!
+  totalMetisReward: BigInt!
   lastMetisReward: BigInt!
-  allTimeCerusReward: BigInt!
+  totalCerusReward: BigInt!
   lastCerusReward: BigInt!
   userCollections: [UserCollection!]!
   deposits: BigInt!
@@ -35,9 +35,9 @@ type UserCollection @entity {
   id: ID!
   address: Bytes!
   user: Bytes!
-  allTimeMetisReward: BigInt!
+  totalMetisReward: BigInt!
   lastMetisReward: BigInt!
-  allTimeCerusReward: BigInt!
+  totalCerusReward: BigInt!
   lastCerusReward: BigInt!
   tokenIds: [BigInt!]!
   tokens: [Token!]!

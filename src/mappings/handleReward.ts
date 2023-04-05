@@ -73,9 +73,9 @@ export function handleReward(event: RewardEvent): void {
   let userId = event.params.user.toHex();
   let user = User.load(userId);
   if (user != null) {
-    user.allTimeMetisReward = user.allTimeMetisReward.plus(event.params.amountMetis);
+    user.totalMetisReward = user.totalMetisReward.plus(event.params.amountMetis);
     user.lastMetisReward = event.params.amountMetis;
-    user.allTimeCerusReward = user.allTimeCerusReward.plus(event.params.amountCerus);
+    user.totalCerusReward = user.totalCerusReward.plus(event.params.amountCerus);
     user.lastCerusReward = event.params.amountCerus;
     user.rewards = user.rewards.plus(BigInt.fromI32(1));
 
@@ -86,9 +86,9 @@ export function handleReward(event: RewardEvent): void {
   let userCollectionId = userId + "-" + collectionId;
   let userCollection = UserCollection.load(userCollectionId);
   if (userCollection) {
-    userCollection.allTimeMetisReward = userCollection.allTimeMetisReward.plus(event.params.amountMetis);
+    userCollection.totalMetisReward = userCollection.totalMetisReward.plus(event.params.amountMetis);
     userCollection.lastMetisReward = event.params.amountMetis;
-    userCollection.allTimeCerusReward = userCollection.allTimeCerusReward.plus(event.params.amountCerus);
+    userCollection.totalCerusReward = userCollection.totalCerusReward.plus(event.params.amountCerus);
     userCollection.lastCerusReward = event.params.amountCerus;
     userCollection.timesRewarded = userCollection.timesRewarded.plus(BigInt.fromI32(1));
 
